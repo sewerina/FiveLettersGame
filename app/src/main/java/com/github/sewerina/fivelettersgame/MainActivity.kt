@@ -5,7 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,11 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,10 +30,10 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.sewerina.fivelettersgame.LetterState.*
 import com.github.sewerina.fivelettersgame.ui.theme.FiveLettersGameTheme
 
 class MainActivity : ComponentActivity() {
@@ -89,7 +89,7 @@ fun GameScreen(gameState: GameState.Active, action: (Event) -> Unit) {
             .padding(horizontal = 8.dp, vertical = 16.dp)
 
     ) {
-        Words()
+        Words(gameState.field)
 
         Spacer(modifier = Modifier.weight(0.2f))
 
@@ -100,20 +100,18 @@ fun GameScreen(gameState: GameState.Active, action: (Event) -> Unit) {
 }
 
 @Composable
-fun Words() {
+fun Words(gameField: GameField) {
     Column(
         Modifier.background(color = Color.Yellow)
     ) {
-        WordRow()
-        WordRow()
-        WordRow()
-        WordRow()
-        WordRow()
+        gameField.words.forEach { word ->
+            WordRow(word)
+        }
     }
 }
 
 @Composable
-fun WordRow() {
+fun WordRow(word: Word) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -121,28 +119,46 @@ fun WordRow() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LetterCell()
-        LetterCell()
-        LetterCell()
-        LetterCell()
-        LetterCell()
+        word.letters.forEach { letter ->
+            LetterCell(letter)
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LetterCell() {
-    TextField(
-        modifier = Modifier.size(64.dp),
-        textStyle = TextStyle(
-            textDecoration = TextDecoration.None,
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp
-        ),
-        singleLine = true,
-        maxLines = 1,
-        value = "X",
-        onValueChange = {})
+fun LetterCell(letter: Letter) {
+    var colorCell: Color =
+    when(letter.state) {
+        EMPTY -> {
+            Color.White
+        }
+        FILLED -> {
+            Color.White
+        }
+        WRONG -> {
+            Color.LightGray
+        }
+        PART -> {
+            Color.Yellow
+        }
+        FULL -> {
+            Color.Green
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(72.dp)
+            .background(color = colorCell)
+            .border(width = 1.dp, color = Color.Blue)
+    ) {
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            maxLines = 1,
+            text = letter.value.uppercase(),
+            style = TextStyle(fontSize = 24.sp, color = Color.DarkGray)
+        )
+    }
 }
 
 val lettersTop = arrayOf("Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ъ")
