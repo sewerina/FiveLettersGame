@@ -4,6 +4,9 @@ package com.github.sewerina.fivelettersgame
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,23 +22,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.sewerina.fivelettersgame.LetterState.*
+import com.github.sewerina.fivelettersgame.LetterState.EMPTY
+import com.github.sewerina.fivelettersgame.LetterState.FILLED
+import com.github.sewerina.fivelettersgame.LetterState.FULL
+import com.github.sewerina.fivelettersgame.LetterState.PART
+import com.github.sewerina.fivelettersgame.LetterState.WRONG
 import com.github.sewerina.fivelettersgame.ui.theme.FiveLettersGameTheme
 
 class MainActivity : ComponentActivity() {
@@ -128,33 +137,55 @@ fun WordRow(word: Word) {
 
 @Composable
 fun LetterCell(letter: Letter) {
-    var colorCell: Color =
-    when(letter.state) {
-        EMPTY -> {
-            Color.White
+    val animSpec = spring<Float>(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessLow
+    )
+    val textAlpha: Float by animateFloatAsState(
+        if (letter.state == LetterState.EMPTY) 0f else 1f,
+        animationSpec = animSpec,
+        label = "letterCellTextAlpha"
+    )
+    val textScale: Float by animateFloatAsState(
+        if (letter.state == LetterState.EMPTY) 0f else 1f,
+        animationSpec = animSpec,
+        label = "letterCellTextScale"
+    )
+
+    var cellColor: Color =
+        when (letter.state) {
+            EMPTY -> {
+                Color.White
+            }
+
+            FILLED -> {
+                Color.White
+            }
+
+            WRONG -> {
+                Color.LightGray
+            }
+
+            PART -> {
+                Color.Yellow
+            }
+
+            FULL -> {
+                Color.Green
+            }
         }
-        FILLED -> {
-            Color.White
-        }
-        WRONG -> {
-            Color.LightGray
-        }
-        PART -> {
-            Color.Yellow
-        }
-        FULL -> {
-            Color.Green
-        }
-    }
 
     Box(
         modifier = Modifier
             .size(72.dp)
-            .background(color = colorCell)
+            .background(color = cellColor)
             .border(width = 1.dp, color = Color.Blue)
     ) {
         Text(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .scale(textScale)
+                .graphicsLayer(alpha = textAlpha),
             maxLines = 1,
             text = letter.value.uppercase(),
             style = TextStyle(fontSize = 24.sp, color = Color.DarkGray)
@@ -210,7 +241,7 @@ fun CheckWordButton(stateButton: Boolean, action: (Event) -> Unit) {
     Button(
         modifier = Modifier
             .fillMaxWidth(),
-        onClick ={ action(Event.Check) },
+        onClick = { action(Event.Check) },
         enabled = stateButton,
         shape = RectangleShape
     ) {
