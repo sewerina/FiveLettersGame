@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -85,7 +87,6 @@ fun FinishedScreen(gameState: GameState.Finished, action: (Event) -> Unit) {
 fun GameScreen(gameState: GameState.Active, action: (Event) -> Unit) {
     Column(
         modifier = Modifier
-            .background(color = Color.Green)
             .padding(horizontal = 8.dp, vertical = 16.dp)
 
     ) {
@@ -93,9 +94,9 @@ fun GameScreen(gameState: GameState.Active, action: (Event) -> Unit) {
 
         Spacer(modifier = Modifier.weight(0.2f))
 
-        Alphabet(action)
+        Alphabet(gameState, action)
 
-        CheckWordButton(action)
+        CheckWordButton(gameState.stateButton, action)
     }
 }
 
@@ -161,58 +162,43 @@ fun LetterCell(letter: Letter) {
     }
 }
 
-val lettersTop = arrayOf("Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ъ")
-val lettersMiddle = arrayOf("Ф", "Ы", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э")
-val lettersBottom = arrayOf("Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "<--")
+val keysTop = arrayOf("Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ъ")
+val keysMiddle = arrayOf("Ф", "Ы", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э")
+val keysBottom = arrayOf("Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "<--")
+val keyRows = arrayOf(keysTop, keysMiddle, keysBottom)
 
 @Composable
-fun Alphabet(action: (Event) -> Unit) {
+fun Alphabet(gameState: GameState.Active, action: (Event) -> Unit) {
     Column() {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            lettersTop.forEach { letter ->
-                Button(
-                    modifier = Modifier
-                        .weight(1f)
-                        .widthIn(24.dp, 32.dp)
-                        .heightIn(40.dp, 40.dp)
-                        .padding(2.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    shape = RectangleShape,
-                    onClick = { action(Event.Key(letter)) }) {
-                    Text(text = letter, maxLines = 1, textAlign = TextAlign.Center)
-                }
-            }
-        }
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            lettersMiddle.forEach { letter ->
-                Button(
-                    modifier = Modifier
-                        .weight(1f)
-                        .widthIn(24.dp, 32.dp)
-                        .heightIn(40.dp, 40.dp)
-                        .padding(2.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    shape = RectangleShape,
-                    onClick = { action(Event.Key(letter)) }) {
-                    Text(text = letter, maxLines = 1, textAlign = TextAlign.Center)
-                }
-            }
-        }
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            lettersBottom.forEach { letter ->
-                Button(
-                    modifier = Modifier
-                        .weight(1f)
-                        .widthIn(24.dp, 32.dp)
-                        .heightIn(40.dp, 40.dp)
-                        .padding(2.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    shape = RectangleShape,
-                    onClick = { action(Event.Key(letter)) }
-                ) {
-                    Text(text = letter, maxLines = 1, textAlign = TextAlign.Center)
+        keyRows.forEach { keys ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                keys.forEach { key ->
+                    var stateButton = true
+                    var backColor = MaterialTheme.colorScheme.primary
+                    if (key in gameState.wrongSet) {
+                        backColor = Color.LightGray
+                        stateButton = false
+                    }
+                    if (key in gameState.partSet) {
+                        backColor = Color.Yellow
+                    }
+                    if (key in gameState.fullSet) {
+                        backColor = Color.Green
+                    }
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .widthIn(24.dp, 32.dp)
+                            .heightIn(40.dp, 40.dp)
+                            .padding(2.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        shape = RectangleShape,
+                        onClick = { action(Event.Key(key)) },
+                        enabled = stateButton,
+                        colors = ButtonDefaults.buttonColors(containerColor = backColor)
+                    ) {
+                        Text(text = key, maxLines = 1, textAlign = TextAlign.Center)
+                    }
                 }
             }
         }
@@ -220,10 +206,12 @@ fun Alphabet(action: (Event) -> Unit) {
 }
 
 @Composable
-fun CheckWordButton(action: (Event) -> Unit) {
+fun CheckWordButton(stateButton: Boolean, action: (Event) -> Unit) {
     Button(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { action(Event.Check) },
+        modifier = Modifier
+            .fillMaxWidth(),
+        onClick ={ action(Event.Check) },
+        enabled = stateButton,
         shape = RectangleShape
     ) {
         Text(text = stringResource(R.string.btn_check_word).uppercase())

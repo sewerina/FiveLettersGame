@@ -32,20 +32,28 @@ class MainViewModel : ViewModel() {
 
     private fun check() {
         val s = state.value as Active
+        val wrongSet = s.wrongSet
+        val partSet = s.partSet
+        val fullSet = s.fullSet
         val field = s.field.copy(words = s.field.words.copyOf())
         val word =
             field.words[s.curWordIndex].copy(letters = field.words[s.curWordIndex].letters.copyOf())
+
+        // Цикл для проверки соответствия букв в введенном слове (letter = word.letters[i]) и букв в загаданном слове (s.word)
         for (i in 0..4) {
             val letter = word.letters[i]
-            var letterState = letter.state
+            var letterState: LetterState
             if (s.word.contains(letter.value)) {
-                letterState = if (s.word[i].toString() == letter.value) {
-                    LetterState.FULL
+                if (s.word[i].toString() == letter.value) {
+                    letterState = LetterState.FULL
+                    fullSet.add(letter.value)
                 } else {
-                    LetterState.PART
+                    letterState = LetterState.PART
+                    partSet.add(letter.value)
                 }
             } else {
                 letterState = LetterState.WRONG
+                wrongSet.add(letter.value)
             }
             word.letters[i] = letter.copy(state = letterState)
         }
@@ -60,6 +68,9 @@ class MainViewModel : ViewModel() {
             state.value = s.copy(field = field).also {
                 it.curWordIndex = s.curWordIndex + 1
                 it.curLetterIndex = 0
+                it.wrongSet = wrongSet
+                it.partSet = partSet
+                it.fullSet = fullSet
             }
             return
         }
@@ -89,6 +100,14 @@ class MainViewModel : ViewModel() {
         state.value = s.copy(field = field).also {
             it.curWordIndex = s.curWordIndex
             it.curLetterIndex = curLetterIndex
+
+            if (it.field.words[it.curWordIndex].letters[4].state == LetterState.FILLED) {
+                it.stateButton = true
+            }
+
+            it.wrongSet = s.wrongSet
+            it.partSet = s.partSet
+            it.fullSet = s.fullSet
         }
     }
 }
@@ -103,6 +122,10 @@ sealed interface GameState {
     data class Active(val word: String, val field: GameField = GameField()) : GameState {
         var curWordIndex: Int = 0
         var curLetterIndex: Int = 0
+        var stateButton = false
+        var wrongSet = mutableSetOf<String>()
+        var partSet = mutableSetOf<String>()
+        var fullSet = mutableSetOf<String>()
     }
 
     data class Finished(val isWin: Boolean) : GameState
