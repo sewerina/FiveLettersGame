@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,8 +55,7 @@ class MainActivity : ComponentActivity() {
             FiveLettersGameTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     val vm: MainViewModel = viewModel()
                     when (val gameState = vm.state.value) {
@@ -66,6 +66,9 @@ class MainActivity : ComponentActivity() {
                         is GameState.Finished -> {
                             FinishedScreen(gameState, vm::send)
                         }
+                    }
+                    LaunchedEffect(key1 = Unit) {
+                        vm.send(Event.NewGame)
                     }
                 }
             }
@@ -95,12 +98,12 @@ fun FinishedScreen(gameState: GameState.Finished, action: (Event) -> Unit) {
 @Composable
 fun GameScreen(gameState: GameState.Active, action: (Event) -> Unit) {
     Column(
-        modifier = Modifier
-            .padding(horizontal = 8.dp, vertical = 16.dp)
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
 
     ) {
         Words(gameState.field)
 
+        Text(text = gameState.word)
         Spacer(modifier = Modifier.weight(0.2f))
 
         Alphabet(gameState, action)
@@ -138,8 +141,7 @@ fun WordRow(word: Word) {
 @Composable
 fun LetterCell(letter: Letter) {
     val animSpec = spring<Float>(
-        dampingRatio = Spring.DampingRatioMediumBouncy,
-        stiffness = Spring.StiffnessLow
+        dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow
     )
     val textAlpha: Float by animateFloatAsState(
         if (letter.state == LetterState.EMPTY) 0f else 1f,
@@ -152,28 +154,27 @@ fun LetterCell(letter: Letter) {
         label = "letterCellTextScale"
     )
 
-    var cellColor: Color =
-        when (letter.state) {
-            EMPTY -> {
-                Color.White
-            }
-
-            FILLED -> {
-                Color.White
-            }
-
-            WRONG -> {
-                Color.LightGray
-            }
-
-            PART -> {
-                Color.Yellow
-            }
-
-            FULL -> {
-                Color.Green
-            }
+    var cellColor: Color = when (letter.state) {
+        EMPTY -> {
+            Color.White
         }
+
+        FILLED -> {
+            Color.White
+        }
+
+        WRONG -> {
+            Color.LightGray
+        }
+
+        PART -> {
+            Color.Yellow
+        }
+
+        FULL -> {
+            Color.Green
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -239,8 +240,7 @@ fun Alphabet(gameState: GameState.Active, action: (Event) -> Unit) {
 @Composable
 fun CheckWordButton(stateButton: Boolean, action: (Event) -> Unit) {
     Button(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         onClick = { action(Event.Check) },
         enabled = stateButton,
         shape = RectangleShape

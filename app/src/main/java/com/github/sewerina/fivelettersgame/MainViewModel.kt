@@ -3,12 +3,14 @@ package com.github.sewerina.fivelettersgame
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.github.sewerina.fivelettersgame.GameState.Active
-import java.lang.Integer.max
+import com.github.sewerina.fivelettersgame.api.ApiRepository
+import kotlinx.coroutines.launch
 import java.lang.Integer.min
 
-class MainViewModel : ViewModel() {
-    val state: MutableState<GameState> = mutableStateOf(Active("ВЕСНА"))
+class MainViewModel(private val apiRepo: ApiRepository = ApiRepository()) : ViewModel() {
+    val state: MutableState<GameState> = mutableStateOf(Active(""))
 
     fun send(event: Event) {
         when (event) {
@@ -27,7 +29,10 @@ class MainViewModel : ViewModel() {
     }
 
     private fun newGame() {
-        state.value = Active("")
+        viewModelScope.launch {
+            val word = apiRepo.getWord().word
+            state.value = Active(word.uppercase())
+        }
     }
 
     private fun check() {
