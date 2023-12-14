@@ -25,8 +25,7 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
     }
@@ -78,4 +77,9 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.6")
     implementation("io.ktor:ktor-client-android:2.3.6")
     implementation("io.ktor:ktor-client-logging:2.3.6")
+
+    //Koin Dependencies
+    implementation("io.insert-koin:koin-core:3.5.2-RC1")
+    implementation("io.insert-koin:koin-android:3.5.2-RC1")
+    implementation("io.insert-koin:koin-androidx-compose:3.5.2-RC1")
 }

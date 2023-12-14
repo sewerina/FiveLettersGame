@@ -40,13 +40,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.sewerina.fivelettersgame.LetterState.EMPTY
 import com.github.sewerina.fivelettersgame.LetterState.FILLED
 import com.github.sewerina.fivelettersgame.LetterState.FULL
 import com.github.sewerina.fivelettersgame.LetterState.PART
 import com.github.sewerina.fivelettersgame.LetterState.WRONG
 import com.github.sewerina.fivelettersgame.ui.theme.FiveLettersGameTheme
+import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    val vm: MainViewModel = viewModel()
+                    val vm: MainViewModel = koinViewModel()
                     when (val gameState = vm.state.value) {
                         is GameState.Active -> {
                             GameScreen(gameState, vm::send)

@@ -9,7 +9,7 @@ import com.github.sewerina.fivelettersgame.api.ApiRepository
 import kotlinx.coroutines.launch
 import java.lang.Integer.min
 
-class MainViewModel(private val apiRepo: ApiRepository = ApiRepository()) : ViewModel() {
+class MainViewModel(private val apiRepo: ApiRepository) : ViewModel() {
     val state: MutableState<GameState> = mutableStateOf(Active(""))
 
     fun send(event: Event) {
